@@ -1,4 +1,3 @@
-"""Модуль 19"""
 import json
 
 import requests
@@ -6,7 +5,6 @@ from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 
 class PetFriends:
-    """апи библиотека к веб приложению Pet Friends"""
 
     def __init__(self):
         self.base_url = "https://petfriends.skillfactory.ru/"
@@ -30,7 +28,7 @@ class PetFriends:
 
     def get_list_of_pets(self, auth_key: json, filter: str = "") -> json:
         """Метод делает запрос к API сервера и возвращает статус запроса и результат в формате JSON
-        со списком наденных питомцев, совпадающих с фильтром. На данный момент фильтр может иметь
+        со списком найденных питомцев, совпадающих с фильтром. На данный момент фильтр может иметь
         либо пустое значение - получить список всех питомцев, либо 'my_pets' - получить список
         собственных питомцев"""
 

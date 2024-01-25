@@ -30,6 +30,13 @@ def test_get_all_pets_with_valid_key(filter=''):
     assert status == 200
     assert len(result['pets']) > 0
 
+def test_get_all_pets_with_invalid_key(filter=''):
+    """ Проверяем что нельзя запросить список всех питомцев при некорректном ключе авторизации"""
+    auth_key = {"key": "incorrect"}
+    status, result = pf.get_list_of_pets(auth_key, filter)
+    assert status == 403
+
+
 def test_add_new_pet_with_valid_data(name='Барсик', animal_type='метис', age='5', pet_photo='images/cat1.jpg'):
     """Проверяем что можно добавить питомца с корректными данными"""
     # Получаем полный путь изображения питомца и сохраняем в переменную pet_photo
@@ -42,19 +49,46 @@ def test_add_new_pet_with_valid_data(name='Барсик', animal_type='мети�
     assert status == 200
     assert result['name'] == name
 
+def test_add_new_pet_with_valid_data(name='Рыжик', animal_type='метис', age='3', pet_photo='images/cat1.jpg'):
+    """Проверяем что нельзя создать две одинаковые карточки питомца в одном профиле"""
+    _, auth_key = pf.get_api_key(valid_email, valid_password)
+    status, result = pf.add_new_pet(auth_key, name, animal_type, age, pet_photo)
+    status, result = pf.add_new_pet(auth_key, name, animal_type, age, pet_photo)
+    assert status == 400
+    """Тест падает, т.к. сервис не осуществляет проверку на дубликаты карточек питомца в конкретном профиле."""
+def test_add_new_pet_with_invalid_key(name='Барсик', animal_type='метис', age='5', pet_photo='images/cat1.jpg'):
+    """Проверяем что нельзя добавить питомца при некорректном ключе авторизации"""
+    auth_key = {"key": "incorrect"}
+    status, result = pf.add_new_pet(auth_key, name, animal_type, age, pet_photo)
+    assert status == 403
+
+
 def test_add_new_pet_with_invalid_age(name='Барсик', animal_type='метис', age='-5', pet_photo='images/cat1.jpg'):
     """Проверяем что нельзя добавить питомца с отрицательным возрастом"""
     _, auth_key = pf.get_api_key(valid_email, valid_password)
     status, result = pf.add_new_pet(auth_key, name, animal_type, age, pet_photo)
     assert status == 400
-    # Тест падает, т.к. сервис не осуществляет проверку на ввод отрицательного числа. Поле age не валидируется и
-    # может принимать любые значения.
+    """Тест падает, т.к. сервис не осуществляет проверку на ввод отрицательного числа. Поле age не валидируется и
+    может принимать любые значения."""
 
 def test_add_new_pet_without_photo_with_valid_data(name='Батон', animal_type='метис', age='3'):
-    """Проверяем что нельзя добавить питомца с отрицательным возрастом"""
+    """Проверяем что можно создать карточку питомца без фото"""
     _, auth_key = pf.get_api_key(valid_email, valid_password)
     status, result = pf.add_new_pet_without_photo(auth_key, name, animal_type, age)
     assert status == 200
+
+def test_add_new_pet_without_photo_with_invalid_data(name='', animal_type='', age=''):
+    """Проверяем что нельзя создать карточку питомца, в которой не заполнено ни одно поле"""
+    _, auth_key = pf.get_api_key(valid_email, valid_password)
+    status, result = pf.add_new_pet_without_photo(auth_key, name, animal_type, age)
+    assert status == 400
+    """Тест падает, т.к. сервис не валидирует поля name, animal_type, age"""
+
+def test_add_new_pet_without_photo_with_invalid_key(name='Батон', animal_type='метис', age='3'):
+    """Проверяем что нельзя создать карточку питомца без фото при некорректном ключе авторизации"""
+    auth_key = {"key": "incorrect"}
+    status, result = pf.add_new_pet_without_photo(auth_key, name, animal_type, age)
+    assert status == 403
 
 def test_successful_delete_self_pet():
     """Проверяем возможность удаления питомца"""
@@ -76,7 +110,6 @@ def test_successful_delete_self_pet():
     # Проверяем что статус ответа равен 200 и в списке питомцев нет id удалённого питомца
     assert status == 200
     assert pet_id not in my_pets.values()
-
 
 def test_successful_update_self_pet_info(name='Мурзик', animal_type='Котэ', age=5):
     """Проверяем возможность обновления информации о питомце"""
@@ -105,3 +138,4 @@ def test_successful_add_photo_of_pet(pet_photo='images/P1040103.jpg'):
     _, my_pets = pf.get_list_of_pets(auth_key, "my_pets")
     pet_id = my_pets['pets'][0]['id']
     status, result = pf.add_photo_of_pet(auth_key, pet_id, pet_photo)
+    assert status == 200
