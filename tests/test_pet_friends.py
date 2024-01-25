@@ -36,7 +36,6 @@ def test_get_all_pets_with_invalid_key(filter=''):
     status, result = pf.get_list_of_pets(auth_key, filter)
     assert status == 403
 
-
 def test_add_new_pet_with_valid_data(name='Барсик', animal_type='метис', age='5', pet_photo='images/cat1.jpg'):
     """Проверяем что можно добавить питомца с корректными данными"""
     # Получаем полный путь изображения питомца и сохраняем в переменную pet_photo
@@ -49,19 +48,19 @@ def test_add_new_pet_with_valid_data(name='Барсик', animal_type='мети�
     assert status == 200
     assert result['name'] == name
 
-def test_add_new_pet_with_valid_data(name='Рыжик', animal_type='метис', age='3', pet_photo='images/cat1.jpg'):
+def test_add_new_pet_twice(name='Рыжик', animal_type='метис', age='3', pet_photo='images/cat1.jpg'):
     """Проверяем что нельзя создать две одинаковые карточки питомца в одном профиле"""
     _, auth_key = pf.get_api_key(valid_email, valid_password)
     status, result = pf.add_new_pet(auth_key, name, animal_type, age, pet_photo)
     status, result = pf.add_new_pet(auth_key, name, animal_type, age, pet_photo)
     assert status == 400
     """Тест падает, т.к. сервис не осуществляет проверку на дубликаты карточек питомца в конкретном профиле."""
+
 def test_add_new_pet_with_invalid_key(name='Барсик', animal_type='метис', age='5', pet_photo='images/cat1.jpg'):
     """Проверяем что нельзя добавить питомца при некорректном ключе авторизации"""
     auth_key = {"key": "incorrect"}
     status, result = pf.add_new_pet(auth_key, name, animal_type, age, pet_photo)
     assert status == 403
-
 
 def test_add_new_pet_with_invalid_age(name='Барсик', animal_type='метис', age='-5', pet_photo='images/cat1.jpg'):
     """Проверяем что нельзя добавить питомца с отрицательным возрастом"""
@@ -113,15 +112,12 @@ def test_successful_delete_self_pet():
 
 def test_successful_update_self_pet_info(name='Мурзик', animal_type='Котэ', age=5):
     """Проверяем возможность обновления информации о питомце"""
-
     # Получаем ключ auth_key и список своих питомцев
     _, auth_key = pf.get_api_key(valid_email, valid_password)
     _, my_pets = pf.get_list_of_pets(auth_key, "my_pets")
-
     # Если список не пустой, то пробуем обновить его имя, тип и возраст
     if len(my_pets['pets']) > 0:
         status, result = pf.update_pet_info(auth_key, my_pets['pets'][0]['id'], name, animal_type, age)
-
         # Проверяем что статус ответа = 200 и имя питомца соответствует заданному
         assert status == 200
         assert result['name'] == name
